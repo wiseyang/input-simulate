@@ -93,7 +93,8 @@
             this.BoardScriptBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.BoardScriptBox.Size = new System.Drawing.Size(297, 264);
             this.BoardScriptBox.TabIndex = 5;
-            this.BoardScriptBox.Text = "; 直接把按键放在一行\r\n; 参见 SendKeys 类说明\r\nas\r\n; 间隔时间, 单位是毫秒\r\n[500]\r\ndf\r\n[500]\r\n; 脚本循环执行";
+            this.BoardScriptBox.Text = "; 直接按键: 直接放在一行\r\n; 参见 SendKeys 类说明\r\nasdf\r\n; 等待时间, 单位毫秒\r\n[1500]\r\n; 间隔按键, 后跟随毫秒间隔\r\n;" +
+    " (asdf, 1500)\r\n; 检查频率通过等待时间设置,\r\n; 建议不要和直接按键一起使用\r\n\r\n; 脚本循环执行";
             // 
             // StartButton
             // 
@@ -171,11 +172,11 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(613, 98);
+            this.label4.Location = new System.Drawing.Point(614, 103);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(80, 17);
             this.label4.TabIndex = 4;
-            this.label4.Text = "绑定鼠标按键";
+            this.label4.Text = "激活按键绑定";
             // 
             // tabControl1
             // 
@@ -223,7 +224,8 @@
             this.MouseScriptBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.MouseScriptBox.Size = new System.Drawing.Size(297, 202);
             this.MouseScriptBox.TabIndex = 2;
-            this.MouseScriptBox.Text = "; 仅支持模拟鼠标左右键\r\nLeft\r\n[5000]\r\n;Right\r\n;[5000]";
+            this.MouseScriptBox.Text = "; 仅支持模拟鼠标左右键: Left, Right\r\nLeft\r\n[5000]\r\n; 间隔按键: 后跟随毫秒间隔\r\n; 建议不要和直接按键一起使用\r\n; (Rig" +
+    "ht, 5000)\r\n\r\n; 脚本循环执行";
             // 
             // ShiftBox
             // 

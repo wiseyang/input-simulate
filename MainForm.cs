@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -179,6 +180,7 @@ namespace InputSimulate
         {
             if (_data.MouseScript == null || _data.MouseScript.Length <= 0)
                 return;
+            var lastTime = new Dictionary<string, DateTime>();
             for (int current = 0; current < _data.MouseScript.Length;
                 current = current == _data.MouseScript.Length - 1 ? 0 : (current + 1))
             {
@@ -195,53 +197,80 @@ namespace InputSimulate
                     var sleep = int.Parse(line.Substring(1, line.Length - 2).Trim());
                     Thread.Sleep(sleep);
                 }
+                else if (line.StartsWith("(") && line.EndsWith(")"))
+                {
+                    var item = line.Substring(1, line.Length - 2).Trim().Split(',').Select(t => t.Trim()).ToArray();
+                    var command = item[0];
+                    var frequency = double.Parse(item[1]);
+                    var key = $"{current},{command}";
+                    if (!lastTime.ContainsKey(key))
+                    {
+                        SendMouseCommand(command);
+                        lastTime.Add(key, DateTime.Now);
+                    }
+                    else if (lastTime[key].AddMilliseconds(frequency) <= DateTime.Now)
+                    {
+                        SendMouseCommand(command);
+                        lastTime[key] = DateTime.Now;
+                    }
+                }
                 else
                 {
-                    var pressed = false;
-                    try
-                    {
-                        if (_data.GetProcess() == null)
-                            throw new Exception("找不到进程");
-                        var mouse = (MouseKey) Enum.Parse(typeof(MouseKey), line, true);
-                        if (_data.ShiftControlled)
-                        {
-                            keybd_event(0x10, 0x45, 0x1, UIntPtr.Zero); // SHIFT + KEYEVENTF_EXTENDEDKEY
-                            Log("按住 SHIFT 键");
-                            pressed = true;
-                        }
-                        if (mouse == MouseKey.Left)
-                        {
-                            mouse_event(MouseFlag.LeftDown, Cursor.Position.X, Cursor.Position.Y, 0, UIntPtr.Zero);
-                            Thread.Sleep(100);
-                            mouse_event(MouseFlag.LeftUp, Cursor.Position.X, Cursor.Position.Y, 0, UIntPtr.Zero);
-                            Log("鼠标: " + line);
-                        }
-                        else if (mouse == MouseKey.Right)
-                        {
-                            mouse_event(MouseFlag.RightDown, Cursor.Position.X, Cursor.Position.Y, 0, UIntPtr.Zero);
-                            Thread.Sleep(100);
-                            mouse_event(MouseFlag.RightUp, Cursor.Position.X, Cursor.Position.Y, 0, UIntPtr.Zero);
-                            Log("鼠标: " + line);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        Log("无法发送鼠标: " + line);
-                    }
-                    finally
-                    {
-                        if (_data.ShiftControlled && pressed)
-                        {
-                            keybd_event(0x10, 0x45, 0x1 | 0x2, UIntPtr.Zero); // SHIFT + KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP
-                            Log("释放 SHIFT 键");
-                        }
-                    }
+                    SendMouseCommand(line);
+                }
+            }
+        }
+
+        private void SendMouseCommand(string command)
+        {
+            const byte shiftKey = 0x10;
+            const byte scanCode = 0x45;
+            const int extendeKey = 0x1;
+            const int keyUp = 0x2;
+            var pressed = false;
+            try
+            {
+                if (_data.GetProcess() == null)
+                    throw new Exception("找不到进程");
+                var mouse = (MouseKey)Enum.Parse(typeof(MouseKey), command, true);
+                if (_data.ShiftControlled)
+                {
+                    keybd_event(shiftKey, scanCode, extendeKey, UIntPtr.Zero);
+                    Log("按住 SHIFT 键");
+                    pressed = true;
+                }
+                if (mouse == MouseKey.Left)
+                {
+                    mouse_event(MouseFlag.LeftDown, Cursor.Position.X, Cursor.Position.Y, 0, UIntPtr.Zero);
+                    Thread.Sleep(100);
+                    mouse_event(MouseFlag.LeftUp, Cursor.Position.X, Cursor.Position.Y, 0, UIntPtr.Zero);
+                    Log("鼠标: " + command);
+                }
+                else if (mouse == MouseKey.Right)
+                {
+                    mouse_event(MouseFlag.RightDown, Cursor.Position.X, Cursor.Position.Y, 0, UIntPtr.Zero);
+                    Thread.Sleep(100);
+                    mouse_event(MouseFlag.RightUp, Cursor.Position.X, Cursor.Position.Y, 0, UIntPtr.Zero);
+                    Log("鼠标: " + command);
+                }
+            }
+            catch (Exception)
+            {
+                Log("无法发送鼠标: " + command);
+            }
+            finally
+            {
+                if (_data.ShiftControlled && pressed)
+                {
+                    keybd_event(shiftKey, scanCode, extendeKey | keyUp, UIntPtr.Zero);
+                    Log("释放 SHIFT 键");
                 }
             }
         }
 
         private void StartBoardSimulateTask()
         {
+            var lastTime = new Dictionary<string, DateTime>();
             for (int current = 0; current < _data.BoardScript.Length;
                 current = current == _data.BoardScript.Length - 1 ? 0 : (current + 1))
             {
@@ -255,23 +284,45 @@ namespace InputSimulate
                     continue;
                 if (line.StartsWith("[") && line.EndsWith("]"))
                 {
-                    var sleep = int.Parse(line.Substring(1, line.Length - 2).Trim());
-                    Thread.Sleep(sleep);
+                    var sleep = double.Parse(line.Substring(1, line.Length - 2).Trim());
+                    Thread.Sleep(TimeSpan.FromMilliseconds(sleep));
+                }
+                else if (line.StartsWith("(") && line.EndsWith(")"))
+                {
+                    var item = line.Substring(1, line.Length - 2).Trim().Split(',').Select(t => t.Trim()).ToArray();
+                    var command = item[0];
+                    var frequency = double.Parse(item[1]);
+                    var key = $"{current},{command}";
+                    if (!lastTime.ContainsKey(key))
+                    {
+                        SendKeyboardCommand(command);
+                        lastTime.Add(key, DateTime.Now);
+                    }
+                    else if (lastTime[key].AddMilliseconds(frequency) <= DateTime.Now)
+                    {
+                        SendKeyboardCommand(command);
+                        lastTime[key] = DateTime.Now;
+                    }
                 }
                 else
                 {
-                    try
-                    {
-                        if (_data.GetProcess() == null)
-                            throw new Exception("找不到进程");
-                        SendKeys.SendWait(line);
-                        Log("键盘: " + line);
-                    }
-                    catch (Exception)
-                    {
-                        Log("无法发送键盘: " + line);
-                    }
+                    SendKeyboardCommand(line);
                 }
+            }
+        }
+
+        private void SendKeyboardCommand(string command)
+        {
+            try
+            {
+                if (_data.GetProcess() == null)
+                    throw new Exception("找不到进程");
+                SendKeys.SendWait(command);
+                Log("键盘: " + command);
+            }
+            catch (Exception)
+            {
+                Log("无法发送键盘: " + command);
             }
         }
 

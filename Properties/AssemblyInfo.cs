@@ -5,11 +5,10 @@ using System.Runtime.InteropServices;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("模拟键盘鼠标")]
-[assembly: AssemblyDescription("模拟键盘鼠标")]
-[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyTitle("模拟按键")]
+[assembly: AssemblyDescription("模拟键盘鼠标按键, 任意鼠标键盘都可使用.")]
 [assembly: AssemblyCompany("wiseyang.com")]
-[assembly: AssemblyProduct("模拟键盘鼠标")]
+[assembly: AssemblyProduct("模拟按键")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 
 // 将 ComVisible 设置为 false 会使此程序集中的类型
@@ -30,5 +29,5 @@ using System.Runtime.InteropServices;
 // 可以指定所有值，也可以使用以下所示的 "*" 预置版本号和修订号
 // 方法是按如下所示使用“*”: :
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.1.0.0")]
+[assembly: AssemblyFileVersion("1.1.0.0")]
